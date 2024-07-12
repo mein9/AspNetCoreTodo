@@ -16,7 +16,7 @@ public class TodoController : Controller
     {
         _todoItemService = todoItemService;
     }
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         var items = await _todoItemService.GetIncompleteItemsAsync();
 
