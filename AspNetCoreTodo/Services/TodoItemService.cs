@@ -11,6 +11,18 @@ namespace AspNetCoreTodo.Services
         {
             _context = context;
         }
+
+        public async Task<bool> AddItemAsync(TodoItem newItem)
+        {
+            newItem.Id = Guid.NewGuid();
+            newItem.IsDone = false;
+            newItem.DueAt = DateTimeOffset.Now.AddDays(3);
+
+            _context.Items.Add(newItem);
+
+            return await _context.SaveChangesAsync() == 1;
+
+        }
         public async Task<TodoItem[]> GetIncompleteItemsAsync()
         {
             return await _context.Items

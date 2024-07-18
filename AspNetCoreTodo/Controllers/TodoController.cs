@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using AspNetCoreTodo.Models;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using AspNetCoreTodo.Services;
 namespace AspNetCoreTodo.Controllers;
@@ -27,5 +21,18 @@ public class TodoController : Controller
         };
         return View(model);
     }
-
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddItem(TodoItem newItem)
+    {
+        if (!ModelState.IsValid)
+        {
+            return RedirectToAction("Index");
+        }
+        var successful = await _todoItemService.AddItemAsync(newItem);
+        if (!successful)
+        {
+            return BadRequest("Could not add item.");
+        }
+        return RedirectToAction("Index");
+    }
 }
