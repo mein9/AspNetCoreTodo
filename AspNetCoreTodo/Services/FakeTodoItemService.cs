@@ -5,6 +5,7 @@ namespace AspNetCoreTodo.Services
     {
         public Task<TodoItem[]> GetIncompleteItemsAsync()
         {
+            
             var item1 = new TodoItem
             {
                 Title = "Learn ASP.NET Core",

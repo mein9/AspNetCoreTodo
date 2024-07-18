@@ -1,6 +1,7 @@
 using AspNetCoreTodo.Data;
 using AspNetCoreTodo.Models;
 using Microsoft.EntityFrameworkCore;
+
 namespace AspNetCoreTodo.Services
 {
     public class TodoItemService : ITodoItemService
@@ -13,7 +14,7 @@ namespace AspNetCoreTodo.Services
         public async Task<TodoItem[]> GetIncompleteItemsAsync()
         {
             return await _context.Items
-            .Where(x => x.IsDone == false)
+            .Where(item => !item.IsDone)
             .ToArrayAsync();
         }
     }
