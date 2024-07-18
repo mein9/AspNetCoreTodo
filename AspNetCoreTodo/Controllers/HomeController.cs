@@ -4,7 +4,6 @@ using AspNetCoreTodo.Models;
 
 namespace AspNetCoreTodo.Controllers;
 
-
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
