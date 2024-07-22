@@ -14,18 +14,26 @@
                 <td>Due</td>
             </tr>
         </thead>
-        @foreach (var item in Model.Items)
+        @if (Model.Items != null)
         {
-            <tr>
-                <td>
-                    <form asp-action="MarkDone" method="POST">
-                        <input type="checkbox" class="done-checkbox">
-                        <input type="hidden" name="id" value="@item.Id">
-                    </form>
-                </td>
-                <td>@item.Title</td>
-                <td>@item.DueAt.Humanize()</td>
-            </tr>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>
+                        <form asp-action="MarkDone" method="POST">
+                            <input type="checkbox" class="done-checkbox">
+                            <input type="hidden" name="id" value="@item.Id">
+                        </form>
+                    </td>
+                    <td>@item.Title</td>
+                    <td>@item.DueAt.Humanize()</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <p>No items available.</p>
+        }
         }
     </table>
     <div class="panel-footer add-item-form">
