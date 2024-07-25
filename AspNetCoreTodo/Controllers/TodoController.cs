@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using AspNetCoreTodo.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace AspNetCoreTodo.Controllers;
 
@@ -41,7 +42,10 @@ public class TodoController : Controller
         {
             return RedirectToAction("Index");
         }
-        var successful = await _todoItemService.AddItemAsync(newItem);
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Challenge();
+
+        var successful = await _todoItemService.AddItemAsync(newItem, currentUser);
         if (!successful)
         {
             return BadRequest("Could not add item.");
@@ -56,11 +60,40 @@ public class TodoController : Controller
         {
             return RedirectToAction("Index");
         }
-        var successful = await _todoItemService.MarkDoneAsync(id);
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Challenge();
+
+        var successful = await _todoItemService.MarkDoneAsync(id, currentUser);
         if (!successful)
         {
             return BadRequest("Could not mark item as done.");
         }
         return RedirectToAction("Index");
+    }
+
+    [Authorize(Roles = "Administrator")]
+    public class ManageUsersController : Controller
+    {
+        private readonly UserManager<IdentityUser>
+        _userManager;
+        public ManageUsersController(
+        UserManager<IdentityUser> userManager)
+        {
+            _userManager = userManager;
+        }
+        public async Task<IActionResult> Index()
+        {
+            var admins = (await _userManager
+            .GetUsersInRoleAsync("Administrator"))
+            .ToArray();
+            var everyone = await _userManager.Users
+            .ToArrayAsync();
+            var model = new ManageUsersViewModel
+            {
+                Administrators = admins,
+                Everyone = everyone
+            };
+            return View(model);
+        }
     }
 }
