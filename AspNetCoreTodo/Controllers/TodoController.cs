@@ -1,18 +1,30 @@
 using AspNetCoreTodo.Models;
 using Microsoft.AspNetCore.Mvc;
 using AspNetCoreTodo.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+
 namespace AspNetCoreTodo.Controllers;
 
+[Authorize]
 public class TodoController : Controller
 {
     private readonly ITodoItemService _todoItemService;
-    public TodoController(ITodoItemService todoItemService)
+    private readonly UserManager<IdentityUser> _userManager;
+
+    public TodoController(ITodoItemService todoItemService, UserManager<IdentityUser> userManager)
     {
         _todoItemService = todoItemService;
+        _userManager = userManager;
     }
+
     public async Task<IActionResult> Index()
     {
-        var items = await _todoItemService.GetIncompleteItemsAsync();
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser == null) return Challenge();
+
+
+        var items = await _todoItemService.GetIncompleteItemsAsync(currentUser);
 
         //Get to-do items from database
         var model = new TodoViewModel()
@@ -21,6 +33,7 @@ public class TodoController : Controller
         };
         return View(model);
     }
+
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddItem(TodoItem newItem)
     {
@@ -35,6 +48,7 @@ public class TodoController : Controller
         }
         return RedirectToAction("Index");
     }
+
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MarkDone(Guid id)
     {

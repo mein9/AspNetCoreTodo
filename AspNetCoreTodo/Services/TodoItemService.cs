@@ -1,5 +1,6 @@
 using AspNetCoreTodo.Data;
 using AspNetCoreTodo.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace AspNetCoreTodo.Services
@@ -23,7 +24,7 @@ namespace AspNetCoreTodo.Services
             return await _context.SaveChangesAsync() == 1;
 
         }
-        public async Task<TodoItem[]> GetIncompleteItemsAsync()
+        public async Task<TodoItem[]> GetIncompleteItemsAsync(IdentityUser currentUser)
         {
             return await _context.Items
             .Where(item => !item.IsDone)
