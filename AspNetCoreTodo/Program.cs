@@ -6,15 +6,13 @@ using AspNetCoreTodo;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-
+using Microsoft.Extensions.Logging;
+using System;
 internal class Program
 {
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        var host = BuildWebHost(args);
-        InitializeDatabase(host);
-        host.Run();
 
         // Add services to the container.
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -22,8 +20,11 @@ internal class Program
             options.UseSqlite(connectionString));
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-        builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultUI()
+            .AddDefaultTokenProviders();
+
         builder.Services.AddControllersWithViews();
 
         builder.Services.AddScoped<ITodoItemService, TodoItemService>();
@@ -31,7 +32,7 @@ internal class Program
         var app = builder.Build();
 
         // Initialize the database
-
+        InitializeDatabase(app);
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -41,7 +42,6 @@ internal class Program
         else
         {
             app.UseExceptionHandler("/Home/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 
@@ -59,23 +59,25 @@ internal class Program
 
         app.Run();
     }
-    private static void InitializeDatabase(IWebHost host)
+
+    private static void InitializeDatabase(WebApplication app)
     {
-        using (var scope = host.Services.CreateScope())
+        using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
             try
             {
-                SeedData.InitializeAsync(services).Wait();
+                var context = services.GetRequiredService<ApplicationDbContext>();
+                context.Database.Migrate(); // Ensure the database is up-to-date
+
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                SeedData.InitializeAsync(services, logger).Wait();
             }
             catch (Exception ex)
             {
-                var logger = services
-                .GetRequiredService<ILogger<Program>>();
-                logger.LogError(ex, "Error occurred seeding the DB.");
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "An error occurred while initializing the database.");
             }
         }
     }
-
-
 }
