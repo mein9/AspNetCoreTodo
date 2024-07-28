@@ -32,7 +32,13 @@
                                 asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
-                    <partial name="_LoginPartial" />
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <!-- existing code here -->
+                        </ul>
+                        @await Html.PartialAsync("_LoginPartial")
+                        @await Html.PartialAsync("_AdminActionsPartial")
+                    </div>
                 </div>
             </div>
         </nav>

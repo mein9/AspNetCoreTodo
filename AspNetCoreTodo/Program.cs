@@ -2,12 +2,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AspNetCoreTodo.Data;
 using AspNetCoreTodo.Services;
+using AspNetCoreTodo;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var host = BuildWebHost(args);
+        InitializeDatabase(host);
+        host.Run();
 
         // Add services to the container.
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -22,6 +29,9 @@ internal class Program
         builder.Services.AddScoped<ITodoItemService, TodoItemService>();
 
         var app = builder.Build();
+
+        // Initialize the database
+
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -49,5 +59,23 @@ internal class Program
 
         app.Run();
     }
+    private static void InitializeDatabase(IWebHost host)
+    {
+        using (var scope = host.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            try
+            {
+                SeedData.InitializeAsync(services).Wait();
+            }
+            catch (Exception ex)
+            {
+                var logger = services
+                .GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "Error occurred seeding the DB.");
+            }
+        }
+    }
+
 
 }
