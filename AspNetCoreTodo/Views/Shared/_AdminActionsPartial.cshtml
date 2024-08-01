@@ -1,7 +1,9 @@
 @using Microsoft.AspNetCore.Identity
 @using AspNetCoreTodo.Models
+
 @inject SignInManager<IdentityUser> signInManager
 @inject UserManager<IdentityUser> userManager
+
 @if (signInManager.IsSignedIn(User))
 {
     var currentUser = await userManager.GetUserAsync(User);
@@ -9,6 +11,7 @@
     && await userManager.IsInRoleAsync(
     currentUser,
     Constants.AdministratorRole);
+
     if (isAdmin)
     {
         <ul class="nav navbar-nav navbar-right">

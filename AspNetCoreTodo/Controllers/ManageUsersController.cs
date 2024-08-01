@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using AspNetCoreTodo.Models;
 using Microsoft.EntityFrameworkCore;
+
 namespace AspNetCoreTodo.Controllers
 {
 	[Authorize(Roles = "Administrator")]
@@ -13,8 +14,7 @@ namespace AspNetCoreTodo.Controllers
 	{
 		private readonly UserManager<IdentityUser>
 		_userManager;
-		public ManageUsersController(
-		UserManager<IdentityUser> userManager)
+		public ManageUsersController(UserManager<IdentityUser> userManager)
 		{
 			_userManager = userManager;
 		}
@@ -23,8 +23,8 @@ namespace AspNetCoreTodo.Controllers
 			var admins = (await _userManager
 			.GetUsersInRoleAsync("Administrator"))
 			.ToArray();
-			var everyone = await _userManager.Users
-			.ToArrayAsync();
+
+			var everyone = await _userManager.Users.ToArrayAsync();
 			var model = new ManageUsersViewModel
 			{
 				Administrators = admins,
